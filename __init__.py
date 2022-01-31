@@ -1,5 +1,4 @@
 from openpyxl import load_workbook
-from enum import Enum
 
 wb = load_workbook('test.xlsx')
 
@@ -63,8 +62,6 @@ def change_column_title_for_box():
     columns["box"][0].value = "수량"
 
 
-
-
 def write_necessary_columns():
     ws.insert_cols(0, 11)
 
@@ -88,6 +85,7 @@ def write_necessary_columns():
             cell.value = source[cell.row - 1].value
 
     ws.delete_cols(12, 99)
+
 
 def init():
     merge_CS_to_company()
