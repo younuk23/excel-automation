@@ -3,7 +3,7 @@ from openpyxl.styles import Font, Border, PatternFill, Side, Alignment, NamedSty
 from openpyxl.utils import get_column_letter
 from copy import copy
 
-wb = load_workbook('test.xlsx')
+wb = load_workbook('origin.xlsx')
 
 ws = wb.active
 ws.title = "일일출고형식"
@@ -199,4 +199,3 @@ init()
 
 
 wb.save("test_result.xlsx")
-wb.close()
