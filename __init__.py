@@ -1,5 +1,6 @@
 from openpyxl import load_workbook
-from openpyxl.styles import Font, Border, PatternFill, Side, Alignment
+from openpyxl.styles import Font, Border, PatternFill, Side, Alignment, NamedStyle
+from openpyxl.utils import get_column_letter
 from copy import copy
 
 wb = load_workbook('test.xlsx')
@@ -139,15 +140,49 @@ def write_region_in_worksheets(region_dict):
 
 def write_values_in_region_sheet(region_dict):
     for region, worksheet in region_dict["regions"].items():
-        for n, row in enumerate(region_dict["rows"][f"{region}_rows"]):
-            worksheet[f"A{n+2}"] = columns['receiver'][row].value
-            worksheet[f"B{n+2}"] = columns['product_name'][row].value
-            worksheet[f"C{n+2}"] = columns['option'][row].value
-            worksheet[f"D{n+2}"] = columns['box'][row].value
+        worksheet.delete_cols(5)
+
+        row_list = []
+        for n, row_index in enumerate(region_dict["rows"][f"{region}_rows"]):
+            row = {
+                    "receiver":columns['receiver'][row_index].value,
+                    "product_name":columns['product_name'][row_index].value,
+                    "option":columns["option"][row_index].value,
+                    "quantity":columns["box"][row_index].value
+                    }
+            row_list.append(row)
+        row_list.sort(key=lambda row: row["receiver"])
+
+        for n, row in enumerate(row_list):
+            worksheet[f"A{n+2}"] = row["receiver"]
+            worksheet[f"B{n+2}"] = row["product_name"]
+            worksheet[f"C{n+2}"] = row["option"]
+            worksheet[f"D{n+2}"] = row["quantity"]
+
+        worksheet.delete_rows(len(row_list) + 2, 99)
+
 
 def styling_region_sheet(region_sheets):
-    for worksheet in region_sheets.values():
+    region_style = NamedStyle(name="region_style")
+    region_style.font = Font(size=18)
+    region_style.alignment = Alignment(wrap_text=True)
+    border_style = Side(border_style="thin", color="000000")
+    region_style.border = Border(top=border_style, left=border_style, bottom=border_style, right=border_style)
+    wb.add_named_style(region_style)
 
+    for worksheet in region_sheets.values():
+        for n, rows in enumerate(worksheet.iter_rows(min_row=1)):
+            if n == 0:
+                continue
+
+            for cell in rows:
+                cell.style = region_style
+
+def adjust_column_width_for(region_sheets):
+    widths = [30, 50, 50, 20]
+    for worksheet in region_sheets.values():
+        for n, width in enumerate(widths, 1):
+            worksheet.column_dimensions[get_column_letter(n)].width = width
 
 def init():
     merge_CS_to_company()
@@ -156,9 +191,12 @@ def init():
     region_dict = write_region_dict()
     write_region_in_worksheets(region_dict["regions"])
     write_values_in_region_sheet(region_dict)
+    styling_region_sheet(region_dict["regions"])
+    adjust_column_width_for(region_dict["regions"])
 
 
 init()
 
 
 wb.save("test_result.xlsx")
+wb.close()
