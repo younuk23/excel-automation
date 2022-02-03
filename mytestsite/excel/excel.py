@@ -184,7 +184,7 @@ def bootstrap(file):
                     cell.style = region_style
 
     def adjust_column_width_for(region_sheets):
-        widths = [30, 50, 50, 20]
+        widths = [16, 35, 20, 3.5]
         for worksheet in region_sheets.values():
             for n, width in enumerate(widths, 1):
                 worksheet.column_dimensions[get_column_letter(n)].width = width
